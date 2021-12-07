@@ -10,7 +10,7 @@ repos:
 - repo: local
   hooks:
   - id: format-code
-    name: format code with v fmt
+    name: Format code with v fmt
     language: system
     entry: v fmt -w
     files: \.v$
