@@ -1,4 +1,5 @@
 # xnet
+V port of Golang's [net/ip](https://github.com/golang/go/blob/master/src/net/ip.go).
 
 ## Development
 
