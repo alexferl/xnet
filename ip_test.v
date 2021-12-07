@@ -41,6 +41,39 @@ fn test_parse_ip() {
 	}
 }
 
+struct IPStringTest {
+	have IP     // see RFC 791 and RFC 4291
+	want string // see RFC 791, RFC 4291 and RFC 5952
+}
+
+const ip_string_tests = [
+	// IPv4 address
+	IPStringTest{ipv4(192, 0, 2, 1), '192.0.2.1'},
+	IPStringTest{ipv4(0, 0, 0, 0), '0.0.0.0'}
+	// IPv4-mapped IPv6 address
+	IPStringTest{IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 192, 0, 2, 1]), '192.0.2.1'},
+	IPStringTest{IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0, 0, 0]), '0.0.0.0'}
+	// IPv6 address
+	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1, 0x23, 0, 0x12, 0, 0x1]), '2001:db8::123:12:1'},
+	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1]), '2001:db8::1'},
+	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0x1, 0, 0, 0, 0x1, 0, 0, 0, 0x1]), '2001:db8:0:1:0:1:0:1'},
+	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0x1, 0, 0, 0, 0x1, 0, 0, 0, 0x1, 0, 0]), '2001:db8:1:0:1:0:1:0'},
+	IPStringTest{IP([byte(0x20), 0x1, 0, 0, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0x1]), '2001::1:0:0:1'},
+	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0]), '2001:db8:0:0:1::'},
+	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0x1]), '2001:db8::1:0:0:1'},
+	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0xa, 0, 0xb, 0, 0xc, 0, 0xd]), '2001:db8::a:b:c:d'},
+	IPStringTest{IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), '::'}, // ipv6_unspecified
+	IPStringTest{IP([]byte{}), ''}
+	// Opaque byte sequence
+	IPStringTest{IP([byte(0x01), 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]), '?0123456789abcdef'},
+]
+
+fn test_ip_string() {
+	for t in xnet.ip_string_tests {
+		assert t.have.string() == t.want
+	}
+}
+
 struct IPMaskTest {
 	want IP
 	mask IPMask
