@@ -111,7 +111,7 @@ const ip_mask_string_tests = [
 	IPMaskTestString{ipv4_mask(255, 0, 128, 0), 'ff008000'},
 	IPMaskTestString{IPMask(parse_ip('ffff:ff80::')), 'ffffff80000000000000000000000000'},
 	IPMaskTestString{IPMask(parse_ip('ef00:ff80::cafe:0')), 'ef00ff800000000000000000cafe0000'},
-	IPMaskTestString{ip_mask_nil, ''},
+	IPMaskTestString{ip_mask_nil, '<nil>'},
 ]
 
 fn test_ip_mask_string() {

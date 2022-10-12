@@ -466,7 +466,7 @@ pub fn (mut m IPMask) size() (int, int) {
 // string returns the hexadecimal form of m, with no punctuation.
 pub fn (m IPMask) string() string {
 	if m.len == 0 {
-		return ''
+		return '<nil>'
 	}
 	return hex_string(m)
 }
@@ -551,7 +551,7 @@ fn uitoa(v int) string {
 pub fn (n IPNet) string() string {
 	nn, mut m := network_number_and_mask(n)
 	if nn.len == 0 || m.len == 0 {
-		return ''
+		return '<nil>'
 	}
 	l := simple_mask_length(mut m)
 	if l == -1 {
