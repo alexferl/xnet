@@ -64,15 +64,20 @@ pub fn ipv4_mask(a u8, b u8, c u8, d u8) IPMask {
 	return p
 }
 
+const (
+	ip_nil = IP([]u8{})
+	ip_mask_nil = IPMask([]u8{})
+)
+
 // cidr_mask returns an ipmask consisting of 'ones' 1 bits
 // followed by 0s up to a total length of 'bits' bits.
 // For a mask of this form, cidr_mask is the inverse of ipmask.size.
 pub fn cidr_mask(ones int, bits int) IPMask {
 	if bits != 8 * ipv4_len && bits != 8 * ipv6_len {
-		return IPMask([]u8{})
+		return ip_mask_nil
 	}
 	if ones < 0 || ones > bits {
-		return IPMask([]u8{})
+		return ip_mask_nil
 	}
 	l := bits / 8
 	mut m := IPMask([]u8{len: l})
@@ -201,7 +206,7 @@ fn is_zeros(ip IP) bool {
 }
 
 // to4 converts the IPv4 address ip to a 4-byte representation.
-// If ip is not an IPv4 address, to4 returns nil.
+// If ip is not an IPv4 address, to4 returns ip_nil.
 pub fn (ip IP) to4() IP {
 	if ip.len == ipv4_len {
 		return ip
@@ -209,11 +214,11 @@ pub fn (ip IP) to4() IP {
 	if ip.len == ipv6_len && is_zeros(ip[0..10]) && ip[10] == 0xff && ip[11] == 0xff {
 		return ip[12..16]
 	}
-	return IP([]u8{})
+	return ip_nil
 }
 
 // to16 converts the IP address ip to a 16-byte representation.
-// If ip is not an IP address (it is the wrong length), to16 returns nil.
+// If ip is not an IP address (it is the wrong length), to16 returns ip_nil.
 pub fn (ip IP) to16() IP {
 	if ip.len == ipv4_len {
 		return ipv4(ip[0], ip[1], ip[2], ip[3])
@@ -221,7 +226,7 @@ pub fn (ip IP) to16() IP {
 	if ip.len == ipv6_len {
 		return ip
 	}
-	return IP([]u8{})
+	return ip_nil
 }
 
 // Default route masks for IPv4.
@@ -233,11 +238,11 @@ const (
 
 // default_mask returns the default IP mask for the IP address
 // Only IPv4 addresses have default masks; default_mask returns
-// nil if ip is not a valid IPv4 address.
+// ip_mask_nil if ip is not a valid IPv4 address.
 pub fn (ip IP) default_mask() IPMask {
 	ip4 := ip.to4()
 	if ip4.len == 0 {
-		return IPMask([]u8{})
+		return ip_mask_nil
 	}
 	match true {
 		ip[0] < 0x80 {
@@ -272,7 +277,7 @@ pub fn (mut ip IP) mask(mut mask IPMask) IP {
 	}
 	n := ip.len
 	if n != mask.len {
-		return IP([]u8{})
+		return ip_nil
 	}
 	mut out := IP([]u8{len: n})
 	for i := 0; i < n; i++ {
@@ -302,7 +307,7 @@ fn ubtoa(mut dst []u8, start int, v u8) int {
 
 // string returns the string form of the IP address
 // It returns one of 4 forms:
-//   - '', if ip has length 0
+//   - '<nil>', if ip has length 0
 //   - dotted decimal ("192.0.2.1"), if ip is an IPv4 or IP4-mapped IPv6 address
 //   - IPv6 ("2001:db8::1"), if ip is a valid IPv6 address
 //   - the hexadecimal form of ip, without punctuation, if no other cases apply
@@ -310,7 +315,7 @@ pub fn (ip IP) string() string {
 	mut p := ip
 
 	if ip.len == 0 {
-		return ''
+		return '<nil>'
 	}
 
 	// If IPv4, use dotted notation.
@@ -471,14 +476,14 @@ fn network_number_and_mask(n IPNet) (IP, IPMask) {
 	if ip.len == 0 {
 		ip = n.ip
 		if ip.len != ipv6_len {
-			return IP([]u8{}), IPMask([]u8{})
+			return ip_nil, ip_mask_nil
 		}
 	}
 	mut m := n.mask
 	match m.len {
 		ipv4_len {
 			if ip.len != ipv4_len {
-				return IP([]u8{}), IPMask([]u8{})
+				return ip_nil, ip_mask_nil
 			}
 		}
 		ipv6_len {
@@ -487,7 +492,7 @@ fn network_number_and_mask(n IPNet) (IP, IPMask) {
 			}
 		}
 		else {
-			return IP([]u8{}), IPMask([]u8{})
+			return ip_nil, ip_mask_nil
 		}
 	}
 	return ip, m
@@ -555,34 +560,34 @@ pub fn (n IPNet) string() string {
 	return nn.string() + '/' + uitoa(l)
 }
 
-// Parse IPv4 address (d.d.d.d).
+// parse_ipv4 parses s as a literal IPv4 address described in RFC 791.
 fn parse_ipv4(str string) IP {
 	mut s := str
 	mut p := []u8{len: ipv4_len}
 	for i := 0; i < ipv4_len; i++ {
 		if s.len == 0 {
 			// Missing octets.
-			return IP([]u8{})
+			return ip_nil
 		}
 		if i > 0 {
 			if s[0] != `.` {
-				return IP([]u8{})
+				return ip_nil
 			}
 			s = s[1..]
 		}
 		n, c, ok := dtoi(s)
 		if !ok || n > 0xFF {
-			return IP([]u8{})
+			return ip_nil
 		}
 		if c > 1 && s[0] == `0` {
 			// Reject non-zero components with leading zeroes.
-			return IP([]u8{})
+			return ip_nil
 		}
 		s = s[c..]
 		p[i] = u8(n)
 	}
 	if s.len != 0 {
-		return IP([]u8{})
+		return ip_nil
 	}
 	return ipv4(p[0], p[1], p[2], p[3])
 }
@@ -617,22 +622,22 @@ fn parse_ipv6(str string) IP {
 		// Hex number.
 		n, c, ok := xtoi(s)
 		if !ok || n > 0xFFFF {
-			return IP([]u8{})
+			return ip_nil
 		}
 
 		// If followed by dot, might be in trailing IPv4.
 		if c < s.len && s[c] == `.` {
 			if ellipsis < 0 && i != ipv6_len - ipv4_len {
 				// Not the right place.
-				return IP([]u8{})
+				return ip_nil
 			}
 			if i + ipv4_len > ipv6_len {
 				// Not enough room.
-				return IP([]u8{})
+				return ip_nil
 			}
 			ip4 := parse_ipv4(s)
 			if ip4.len == 0 {
-				return IP([]u8{})
+				return ip_nil
 			}
 			ip[i] = ip4[12]
 			ip[i + 1] = ip4[13]
@@ -656,14 +661,14 @@ fn parse_ipv6(str string) IP {
 
 		// Otherwise must be followed by colon and more.
 		if s[0] != `:` || s.len == 1 {
-			return IP([]u8{})
+			return ip_nil
 		}
 		s = s[1..]
 
 		// Look for ellipsis.
 		if s[0] == `:` {
 			if ellipsis >= 0 { // already have one
-				return IP([]u8{})
+				return ip_nil
 			}
 			ellipsis = i
 			s = s[1..]
@@ -675,13 +680,13 @@ fn parse_ipv6(str string) IP {
 
 	// Must have used entire string.
 	if s.len != 0 {
-		return IP([]u8{})
+		return ip_nil
 	}
 
 	// If didn't parse enough, expand ellipsis.
 	if i < ipv6_len {
 		if ellipsis < 0 {
-			return IP([]u8{})
+			return ip_nil
 		}
 		n := ipv6_len - i
 		for j := i - 1; j >= ellipsis; j-- {
@@ -692,7 +697,7 @@ fn parse_ipv6(str string) IP {
 		}
 	} else if ellipsis >= 0 {
 		// Ellipsis must represent at least one 0 group.
-		return IP([]u8{})
+		return ip_nil
 	}
 
 	return ip
@@ -702,7 +707,7 @@ fn parse_ipv6(str string) IP {
 // The string s can be in IPv4 dotted decimal ("192.0.2.1"), IPv6
 // ("2001:db8::68"), or IPv4-mapped IPv6 ("::ffff:192.0.2.1") form.
 // If s is not a valid textual representation of an IP address,
-// ParseIP returns nil.
+// ParseIP returns ip_nil.
 pub fn parse_ip(s string) IP {
 	for i := 0; i < s.len; i++ {
 		match s[i] {
@@ -717,7 +722,7 @@ pub fn parse_ip(s string) IP {
 			}
 		}
 	}
-	return IP([]u8{})
+	return ip_nil
 }
 
 // parse_ipzone parses s as an IP address, return it and its associated zone
@@ -736,7 +741,7 @@ fn parse_ipzone(s string) (IP, string) {
 			}
 		}
 	}
-	return IP([]u8{}), ''
+	return ip_nil, ''
 }
 
 // parse_cidr parses s as a CIDR notation IP address and prefix length,
@@ -750,7 +755,7 @@ fn parse_ipzone(s string) (IP, string) {
 pub fn parse_cidr(s string) (IP, IPNet, ParseError) {
 	i := s.index_u8(`/`)
 	if i < 0 {
-		return IP([]u8{}), IPNet{}, ParseError{'CIDR address', s}
+		return ip_nil, IPNet{}, ParseError{'CIDR address', s}
 	}
 	addr, mask := s[..i], s[i + 1..]
 	mut iplen := ipv4_len
@@ -761,7 +766,7 @@ pub fn parse_cidr(s string) (IP, IPNet, ParseError) {
 	}
 	n, j, ok := dtoi(mask)
 	if ip.len == 0 || !ok || j != mask.len || n < 0 || n > 8 * iplen {
-		return IP([]u8{}), IPNet{}, ParseError{'CIDR address', s}
+		return ip_nil, IPNet{}, ParseError{'CIDR address', s}
 	}
 	mut m := cidr_mask(n, 8 * iplen)
 	return ip, IPNet{ip.mask(mut m), m}, ParseError{}
