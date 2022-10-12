@@ -14,7 +14,6 @@ import bytealg
 const (
 	ipv4_len        = 4
 	ipv6_len        = 16
-	v4_in_v6_prefix = [byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff]
 )
 
 // An IP is a single IP address, a slice of bytes.
@@ -26,13 +25,13 @@ const (
 // is a semantic property of the address, not just the
 // length of the byte slice: a 16-byte slice can still
 // be an IPv4 address.
-pub type IP = []byte
+pub type IP = []u8
 
 // An IPMask is a bitmask that can be used to manipulate
 // IP addresses for IP addressing and routing.
 //
 // See type IPNet and func parse_cidr for details.
-pub type IPMask = []byte
+pub type IPMask = []u8
 
 // An IPNet represents an IP network.
 pub struct IPNet {
@@ -42,11 +41,9 @@ pub struct IPNet {
 
 // ipv4 returns the IP address (in 16-byte form) of the
 // IPv4 address a.b.c.d.
-pub fn ipv4(a byte, b byte, c byte, d byte) IP {
-	mut p := IP([]byte{len: xnet.ipv6_len})
-	// TODO: de-hardcode when constants work correctly
-	// copy(p, v4_in_v6_prefix)
-	copy(p, [byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff])
+pub fn ipv4(a u8, b u8, c u8, d u8) IP {
+	mut p := IP([]u8{len: ipv6_len})
+	copy(mut p, v4_in_v6_prefix)
 	p[12] = a
 	p[13] = b
 	p[14] = c
@@ -54,10 +51,12 @@ pub fn ipv4(a byte, b byte, c byte, d byte) IP {
 	return p
 }
 
+const v4_in_v6_prefix = [u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff]
+
 // ipv4_mask returns the IP mask (in 4-byte form) of the
 // IPv4 mask a.b.c.d.
-pub fn ipv4_mask(a byte, b byte, c byte, d byte) IPMask {
-	mut p := IPMask([]byte{len: xnet.ipv4_len})
+pub fn ipv4_mask(a u8, b u8, c u8, d u8) IPMask {
+	mut p := IPMask([]u8{len: ipv4_len})
 	p[0] = a
 	p[1] = b
 	p[2] = c
@@ -69,22 +68,22 @@ pub fn ipv4_mask(a byte, b byte, c byte, d byte) IPMask {
 // followed by 0s up to a total length of 'bits' bits.
 // For a mask of this form, cidr_mask is the inverse of ipmask.size.
 pub fn cidr_mask(ones int, bits int) IPMask {
-	if bits != 8 * xnet.ipv4_len && bits != 8 * xnet.ipv6_len {
-		return IPMask([]byte{})
+	if bits != 8 * ipv4_len && bits != 8 * ipv6_len {
+		return IPMask([]u8{})
 	}
 	if ones < 0 || ones > bits {
-		return IPMask([]byte{})
+		return IPMask([]u8{})
 	}
 	l := bits / 8
-	mut m := IPMask([]byte{len: l})
-	mut n := u64(ones) // uint
+	mut m := IPMask([]u8{len: l})
+	mut n := u32(ones)
 	for i := 0; i < l; i++ {
 		if n >= 8 {
 			m[i] = 0xff
 			n -= 8
 			continue
 		}
-		m[i] = ~byte(0xff >> n) & 0xff
+		m[i] = ~u8(0xff >> n) & 0xff
 		n = 0
 	}
 	return m
@@ -100,21 +99,21 @@ const (
 
 // Well-known IPv6 addresses
 const (
-	ipv6_zero                   = IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-	ipv6_unspecified            = IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-	ipv6_loopback               = IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-	ipv6_interfacelocalallnodes = IP([byte(0xff), 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	ipv6_zero                   = IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+	ipv6_unspecified            = IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+	ipv6_loopback               = IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
+	ipv6_interfacelocalallnodes = IP([u8(0xff), 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0x01])
-	ipv6_linklocalallnodes      = IP([byte(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	ipv6_linklocalallnodes      = IP([u8(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0x01])
-	ipv6_linklocalallrouters    = IP([byte(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	ipv6_linklocalallrouters    = IP([u8(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0x02])
 )
 
 // is_unspecified reports whether ip is an unspecified address, either
 // the IPv4 address "0.0.0.0" or the IPv6 address "::".
 pub fn (ip IP) is_unspecified() bool {
-	return ip.equal(xnet.ipv4_zero) || ip.equal(xnet.ipv6_unspecified)
+	return ip.equal(ipv4_zero) || ip.equal(ipv6_unspecified)
 }
 
 // is_loopback reports whether ip is a loopback address.
@@ -123,7 +122,7 @@ pub fn (ip IP) is_loopback() bool {
 	if ip4.len > 0 {
 		return ip4[0] == 127
 	}
-	return ip.equal(xnet.ipv6_loopback)
+	return ip.equal(ipv6_loopback)
 }
 
 // is_private reports whether ip is a private address, according to
@@ -142,7 +141,7 @@ pub fn (ip IP) is_private() bool {
 	}
 	// Following RFC 4193, Section 8. IANA Considerations which says:
 	//   The IANA has assigned the FC00::/7 prefix to "Unique Local Unicast".
-	return ip.len == xnet.ipv6_len && ip[0] & 0xfe == 0xfc
+	return ip.len == ipv6_len && ip[0] & 0xfe == 0xfc
 }
 
 // is_multicast reports whether ip is a multicast address.
@@ -151,13 +150,13 @@ pub fn (ip IP) is_multicast() bool {
 	if ip4.len > 0 {
 		return ip4[0] & 0xf0 == 0xe0
 	}
-	return ip.len == xnet.ipv6_len && ip[0] == 0xff
+	return ip.len == ipv6_len && ip[0] == 0xff
 }
 
 // is_interface_local_multicast reports whether ip is
 // an interface-local multicast address.
 pub fn (ip IP) is_interface_local_multicast() bool {
-	return ip.len == xnet.ipv6_len && ip[0] == 0xff && ip[1] & 0x0f == 0x01
+	return ip.len == ipv6_len && ip[0] == 0xff && ip[1] & 0x0f == 0x01
 }
 
 // is_link_local_multicast reports whether ip is a link-local
@@ -167,7 +166,7 @@ pub fn (ip IP) is_link_local_multicast() bool {
 	if ip4.len > 0 {
 		return ip4[0] == 224 && ip4[1] == 0 && ip4[2] == 0
 	}
-	return ip.len == xnet.ipv6_len && ip[0] == 0xff && ip[1] & 0x0f == 0x02
+	return ip.len == ipv6_len && ip[0] == 0xff && ip[1] & 0x0f == 0x02
 }
 
 // is_link_local_unicast reports whether ip is a link-local
@@ -177,7 +176,7 @@ pub fn (ip IP) is_link_local_unicast() bool {
 	if ip4.len > 0 {
 		return ip4[0] == 169 && ip4[1] == 254
 	}
-	return ip.len == xnet.ipv6_len && ip[0] == 0xfe && ip[1] & 0xc0 == 0x80
+	return ip.len == ipv6_len && ip[0] == 0xfe && ip[1] & 0xc0 == 0x80
 }
 
 // is_global_unicast reports whether ip is a global unicast
@@ -189,12 +188,12 @@ pub fn (ip IP) is_link_local_unicast() bool {
 // It returns true even if ip is in IPv4 private address space or
 // local IPv6 unicast address space.
 pub fn (ip IP) is_global_unicast() bool {
-	return (ip.len == xnet.ipv4_len || ip.len == xnet.ipv6_len) && !ip.equal(xnet.ipv4_bcast)
+	return (ip.len == ipv4_len || ip.len == ipv6_len) && !ip.equal(ipv4_bcast)
 		&& !ip.is_unspecified() && !ip.is_loopback() && !ip.is_multicast()
 		&& !ip.is_link_local_unicast()
 }
 
-// Is p all zeros?
+// Is ip all zeros?
 fn is_zeros(ip IP) bool {
 	for i := 0; i < ip.len; i++ {
 		if ip[i] != 0 {
@@ -207,25 +206,25 @@ fn is_zeros(ip IP) bool {
 // to4 converts the IPv4 address ip to a 4-byte representation.
 // If ip is not an IPv4 address, to4 returns nil.
 pub fn (ip IP) to4() IP {
-	if ip.len == xnet.ipv4_len {
+	if ip.len == ipv4_len {
 		return ip
 	}
-	if ip.len == xnet.ipv6_len && is_zeros(ip[0..10]) && ip[10] == 0xff && ip[11] == 0xff {
+	if ip.len == ipv6_len && is_zeros(ip[0..10]) && ip[10] == 0xff && ip[11] == 0xff {
 		return ip[12..16]
 	}
-	return IP([]byte{})
+	return IP([]u8{})
 }
 
 // to16 converts the IP address ip to a 16-byte representation.
 // If ip is not an IP address (it is the wrong length), to16 returns nil.
 pub fn (ip IP) to16() IP {
-	if ip.len == xnet.ipv4_len {
+	if ip.len == ipv4_len {
 		return ipv4(ip[0], ip[1], ip[2], ip[3])
 	}
-	if ip.len == xnet.ipv6_len {
+	if ip.len == ipv6_len {
 		return ip
 	}
-	return IP([]byte{})
+	return IP([]u8{})
 }
 
 // Default route masks for IPv4.
@@ -241,22 +240,22 @@ const (
 pub fn (ip IP) default_mask() IPMask {
 	ip4 := ip.to4()
 	if ip4.len == 0 {
-		return IPMask([]byte{})
+		return IPMask([]u8{})
 	}
 	match true {
 		ip[0] < 0x80 {
-			return xnet.class_a_mask
+			return class_a_mask
 		}
 		ip[0] < 0xC0 {
-			return xnet.class_b_mask
+			return class_b_mask
 		}
 		else {
-			return xnet.class_c_mask
+			return class_c_mask
 		}
 	}
 }
 
-fn all_ff(b []byte) bool {
+fn all_ff(b []u8) bool {
 	for c in b {
 		if c != 0xff {
 			return false
@@ -266,23 +265,21 @@ fn all_ff(b []byte) bool {
 }
 
 // mask returns the result of masking the IP address ip with mask.
-pub fn (ip IP) mask(mask IPMask) IP {
-	mut ip_ := ip
-	mut mask_ := mask
-	if mask_.len == xnet.ipv6_len && ip_.len == xnet.ipv4_len && all_ff(mask_[..12]) {
-		mask_ = mask_[12..]
+pub fn (mut ip IP) mask(mut mask IPMask) IP {
+	if mask.len == ipv6_len && ip.len == ipv4_len && all_ff(mask[..12]) {
+		mask = mask[12..]
 	}
-	if mask_.len == xnet.ipv4_len && ip_.len == xnet.ipv6_len
-		&& bytealg.equal(ip_[..12], [byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff]) {
-		ip_ = ip_[12..]
+	if mask.len == ipv4_len && ip.len == ipv6_len
+		&& bytealg.equal(ip[..12], [u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff]) {
+		ip = ip[12..]
 	}
-	n := ip_.len
-	if n != mask_.len {
-		return IP([]byte{})
+	n := ip.len
+	if n != mask.len {
+		return IP([]u8{})
 	}
-	mut out := IP([]byte{len: n})
+	mut out := IP([]u8{len: n})
 	for i := 0; i < n; i++ {
-		out[i] = ip_[i] & mask_[i]
+		out[i] = ip[i] & mask[i]
 	}
 	return out
 }
@@ -290,7 +287,7 @@ pub fn (ip IP) mask(mask IPMask) IP {
 // ubtoa encodes the string form of the integer v to dst[start..] and
 // returns the number of bytes written to dst. The caller must ensure
 // that dst has sufficient length.
-fn ubtoa(mut dst []byte, start int, v byte) int {
+fn ubtoa(mut dst []u8, start int, v u8) int {
 	if v < 10 {
 		dst[start] = v + `0`
 		return 1
@@ -321,9 +318,9 @@ pub fn (ip IP) string() string {
 
 	// If IPv4, use dotted notation.
 	p4 := p.to4()
-	if p4.len == xnet.ipv4_len {
+	if p4.len == ipv4_len {
 		max_ipv4_string_len := '255.255.255.255'.len
-		mut b := []byte{len: max_ipv4_string_len}
+		mut b := []u8{len: max_ipv4_string_len}
 
 		mut n := ubtoa(mut b, 0, p4[0])
 		b[n] = `.`
@@ -340,16 +337,16 @@ pub fn (ip IP) string() string {
 		n += ubtoa(mut b, n, p4[3])
 		return b[..n].bytestr()
 	}
-	if p.len != xnet.ipv6_len {
+	if p.len != ipv6_len {
 		return '?' + hex_string(ip)
 	}
 
 	// Find longest run of zeros.
 	mut e0 := -1
 	mut e1 := -1
-	for i := 0; i < xnet.ipv6_len; i += 2 {
+	for i := 0; i < ipv6_len; i += 2 {
 		mut j := i
-		for j < xnet.ipv6_len && p[j] == 0 && p[j + 1] == 0 {
+		for j < ipv6_len && p[j] == 0 && p[j + 1] == 0 {
 			j += 2
 		}
 		if j > i && j - i > e1 - e0 {
@@ -365,15 +362,15 @@ pub fn (ip IP) string() string {
 	}
 
 	max_len := 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'.len
-	mut b := []byte{len: 0, cap: max_len}
+	mut b := []u8{len: 0, cap: max_len}
 
 	// Print with ipv6_len :: in place of run of zeros
-	for i := 0; i < xnet.ipv6_len; i += 2 {
+	for i := 0; i < ipv6_len; i += 2 {
 		if i == e0 {
 			b << `:`
 			b << `:`
 			i = e1
-			if i >= xnet.ipv6_len {
+			if i >= ipv6_len {
 				break
 			}
 		} else if i > 0 {
@@ -384,28 +381,12 @@ pub fn (ip IP) string() string {
 	return b.bytestr()
 }
 
-fn hex_string(b []byte) string {
-	mut s := []byte{len: b.len * 2}
+fn hex_string(b []u8) string {
+	mut s := []u8{len: b.len * 2}
 	for i, tn in b {
-		s[i * 2], s[i * 2 + 1] = xnet.hex_digit[tn >> 4], xnet.hex_digit[tn & 0xf]
+		s[i * 2], s[i * 2 + 1] = hex_digit[tn >> 4], hex_digit[tn & 0xf]
 	}
 	return s.bytestr()
-}
-
-const hex_digit = '0123456789abcdef'
-
-// Convert i to a hexadecimal string. Leading zeros are not printed.
-fn append_hex(mut dst []byte, i u32) []byte {
-	if i == 0 {
-		dst << `0`
-	}
-	for j := 7; j >= 0; j-- {
-		v := i >> int(j * 4)
-		if v > 0 {
-			dst << xnet.hex_digit[v & 0xf]
-		}
-	}
-	return dst
 }
 
 // ip_empty_string is like string except that it returns
@@ -424,11 +405,11 @@ pub fn (ip IP) equal(x IP) bool {
 	if ip.len == x.len {
 		return bytealg.equal(ip, x)
 	}
-	if ip.len == xnet.ipv4_len && x.len == xnet.ipv6_len {
-		return bytealg.equal(x[0..12], xnet.v4_in_v6_prefix) && bytealg.equal(ip, x[12..])
+	if ip.len == ipv4_len && x.len == ipv6_len {
+		return bytealg.equal(x[0..12], v4_in_v6_prefix) && bytealg.equal(ip, x[12..])
 	}
-	if ip.len == xnet.ipv6_len && x.len == xnet.ipv4_len {
-		return bytealg.equal(ip[0..12], xnet.v4_in_v6_prefix) && bytealg.equal(ip[12..], x)
+	if ip.len == ipv6_len && x.len == ipv4_len {
+		return bytealg.equal(ip[0..12], v4_in_v6_prefix) && bytealg.equal(ip[12..], x)
 	}
 	return false
 }
@@ -472,9 +453,8 @@ fn simple_mask_length(mut mask IPMask) int {
 // size returns the number of leading ones and total bits in the mask.
 // If the mask is not in the canonical form--ones followed by zeros--then
 // size returns 0, 0.
-pub fn (m IPMask) size() (int, int) {
-	mut m_ := m
-	ones, bits := simple_mask_length(mut m_), m.len * 8
+pub fn (mut m IPMask) size() (int, int) {
+	ones, bits := simple_mask_length(mut m), m.len * 8
 	if ones == -1 {
 		return 0, 0
 	}
@@ -493,24 +473,24 @@ fn network_number_and_mask(n IPNet) (IP, IPMask) {
 	mut ip := n.ip.to4()
 	if ip.len == 0 {
 		ip = n.ip
-		if ip.len != xnet.ipv6_len {
-			return IP([]byte{}), IPMask([]byte{})
+		if ip.len != ipv6_len {
+			return IP([]u8{}), IPMask([]u8{})
 		}
 	}
 	mut m := n.mask
 	match m.len {
-		xnet.ipv4_len {
-			if ip.len != xnet.ipv4_len {
-				return IP([]byte{}), IPMask([]byte{})
+		ipv4_len {
+			if ip.len != ipv4_len {
+				return IP([]u8{}), IPMask([]u8{})
 			}
 		}
-		xnet.ipv6_len {
-			if ip.len == xnet.ipv4_len {
+		ipv6_len {
+			if ip.len == ipv4_len {
 				m = m[12..]
 			}
 		}
 		else {
-			return IP([]byte{}), IPMask([]byte{})
+			return IP([]u8{}), IPMask([]u8{})
 		}
 	}
 	return ip, m
@@ -547,16 +527,16 @@ fn uitoa(v int) string {
 	if val == 0 { // avoid string allocation
 		return '0'
 	}
-	mut buf := []byte{len: 20} // big enough for 64bit value base 10
+	mut buf := []u8{len: 20} // big enough for 64bit value base 10
 	mut i := buf.len - 1
 	for val >= 10 {
 		q := val / 10
-		buf[i] = byte(`0` + val - q * 10)
+		buf[i] = u8(`0` + val - q * 10)
 		i--
 		val = q
 	}
 	// val < 10
-	buf[i] = byte(`0` + val)
+	buf[i] = u8(`0` + val)
 	return buf[i..].bytestr()
 }
 
@@ -581,31 +561,31 @@ pub fn (n IPNet) string() string {
 // Parse IPv4 address (d.d.d.d).
 fn parse_ipv4(str string) IP {
 	mut s := str
-	mut p := []byte{len: xnet.ipv4_len}
-	for i := 0; i < xnet.ipv4_len; i++ {
+	mut p := []u8{len: ipv4_len}
+	for i := 0; i < ipv4_len; i++ {
 		if s.len == 0 {
 			// Missing octets.
-			return IP([]byte{})
+			return IP([]u8{})
 		}
 		if i > 0 {
 			if s[0] != `.` {
-				return IP([]byte{})
+				return IP([]u8{})
 			}
 			s = s[1..]
 		}
 		n, c, ok := dtoi(s)
 		if !ok || n > 0xFF {
-			return IP([]byte{})
+			return IP([]u8{})
 		}
 		if c > 1 && s[0] == `0` {
 			// Reject non-zero components with leading zeroes.
-			return IP([]byte{})
+			return IP([]u8{})
 		}
 		s = s[c..]
-		p[i] = byte(n)
+		p[i] = u8(n)
 	}
 	if s.len != 0 {
-		return IP([]byte{})
+		return IP([]u8{})
 	}
 	return ipv4(p[0], p[1], p[2], p[3])
 }
@@ -621,7 +601,7 @@ fn parse_ipv6_zone(s string) (IP, string) {
 // and RFC 5952.
 fn parse_ipv6(str string) IP {
 	mut s := str
-	mut ip := IP([]byte{len: xnet.ipv6_len})
+	mut ip := IP([]u8{len: ipv6_len})
 	mut ellipsis := -1 // position of ellipsis in ip
 
 	// Might have leading ellipsis
@@ -636,39 +616,39 @@ fn parse_ipv6(str string) IP {
 
 	// Loop, parsing hex numbers followed by colon.
 	mut i := 0
-	for i < xnet.ipv6_len {
+	for i < ipv6_len {
 		// Hex number.
 		n, c, ok := xtoi(s)
 		if !ok || n > 0xFFFF {
-			return IP([]byte{})
+			return IP([]u8{})
 		}
 
 		// If followed by dot, might be in trailing IPv4.
 		if c < s.len && s[c] == `.` {
-			if ellipsis < 0 && i != xnet.ipv6_len - xnet.ipv4_len {
+			if ellipsis < 0 && i != ipv6_len - ipv4_len {
 				// Not the right place.
-				return IP([]byte{})
+				return IP([]u8{})
 			}
-			if i + xnet.ipv4_len > xnet.ipv6_len {
+			if i + ipv4_len > ipv6_len {
 				// Not enough room.
-				return IP([]byte{})
+				return IP([]u8{})
 			}
 			ip4 := parse_ipv4(s)
 			if ip4.len == 0 {
-				return IP([]byte{})
+				return IP([]u8{})
 			}
 			ip[i] = ip4[12]
 			ip[i + 1] = ip4[13]
 			ip[i + 2] = ip4[14]
 			ip[i + 3] = ip4[15]
 			s = ''
-			i += xnet.ipv4_len
+			i += ipv4_len
 			break
 		}
 
 		// Save this 16-bit chunk.
-		ip[i] = byte(n >> 8)
-		ip[i + 1] = byte(n)
+		ip[i] = u8(n >> 8)
+		ip[i + 1] = u8(n)
 		i += 2
 
 		// Stop at end of string.
@@ -679,14 +659,14 @@ fn parse_ipv6(str string) IP {
 
 		// Otherwise must be followed by colon and more.
 		if s[0] != `:` || s.len == 1 {
-			return IP([]byte{})
+			return IP([]u8{})
 		}
 		s = s[1..]
 
 		// Look for ellipsis.
 		if s[0] == `:` {
 			if ellipsis >= 0 { // already have one
-				return IP([]byte{})
+				return IP([]u8{})
 			}
 			ellipsis = i
 			s = s[1..]
@@ -698,15 +678,15 @@ fn parse_ipv6(str string) IP {
 
 	// Must have used entire string.
 	if s.len != 0 {
-		return IP([]byte{})
+		return IP([]u8{})
 	}
 
 	// If didn't parse enough, expand ellipsis.
-	if i < xnet.ipv6_len {
+	if i < ipv6_len {
 		if ellipsis < 0 {
-			return IP([]byte{})
+			return IP([]u8{})
 		}
-		n := xnet.ipv6_len - i
+		n := ipv6_len - i
 		for j := i - 1; j >= ellipsis; j-- {
 			ip[j + n] = ip[j]
 		}
@@ -715,7 +695,7 @@ fn parse_ipv6(str string) IP {
 		}
 	} else if ellipsis >= 0 {
 		// Ellipsis must represent at least one 0 group.
-		return IP([]byte{})
+		return IP([]u8{})
 	}
 
 	return ip
@@ -740,7 +720,7 @@ pub fn parse_ip(s string) IP {
 			}
 		}
 	}
-	return IP([]byte{})
+	return IP([]u8{})
 }
 
 // parse_ipzone parses s as an IP address, return it and its associated zone
@@ -759,7 +739,7 @@ fn parse_ipzone(s string) (IP, string) {
 			}
 		}
 	}
-	return IP([]byte{}), ''
+	return IP([]u8{}), ''
 }
 
 // parse_cidr parses s as a CIDR notation IP address and prefix length,
@@ -770,23 +750,22 @@ fn parse_ipzone(s string) (IP, string) {
 // prefix length.
 // For example, ParseCIDR("192.0.2.1/24") returns the IP address
 // 192.0.2.1 and the network 192.0.2.0/24.
-
 pub fn parse_cidr(s string) (IP, IPNet, ParseError) {
-	i := s.index_byte(`/`)
+	i := s.index_u8(`/`)
 	if i < 0 {
-		return IP([]byte{}), IPNet{}, ParseError{'CIDR address', s}
+		return IP([]u8{}), IPNet{}, ParseError{'CIDR address', s}
 	}
 	addr, mask := s[..i], s[i + 1..]
-	mut iplen := xnet.ipv4_len
+	mut iplen := ipv4_len
 	mut ip := parse_ipv4(addr)
 	if ip.len == 0 {
-		iplen = xnet.ipv6_len
+		iplen = ipv6_len
 		ip = parse_ipv6(addr)
 	}
 	n, j, ok := dtoi(mask)
 	if ip.len == 0 || !ok || j != mask.len || n < 0 || n > 8 * iplen {
-		return IP([]byte{}), IPNet{}, ParseError{'CIDR address', s}
+		return IP([]u8{}), IPNet{}, ParseError{'CIDR address', s}
 	}
 	mut m := cidr_mask(n, 8 * iplen)
-	return ip, IPNet{ip.mask(m), m}, ParseError{}
+	return ip, IPNet{ip.mask(mut m), m}, ParseError{}
 }

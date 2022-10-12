@@ -13,30 +13,30 @@ const parse_ip_tests = [
 	ParseIPTest{'0:0:0:0:0000:ffff:127.1.2.3', ipv4(127, 1, 2, 3)},
 	ParseIPTest{'0:0:0:0:000000:ffff:127.1.2.3', ipv4(127, 1, 2, 3)},
 	ParseIPTest{'0:0:0:0::ffff:127.1.2.3', ipv4(127, 1, 2, 3)},
-	ParseIPTest{'2001:4860:0:2001::68', IP([byte(0x20), 0x01, 0x48, 0x60, 0, 0, 0x20, 0x01, 0,
+	ParseIPTest{'2001:4860:0:2001::68', IP([u8(0x20), 0x01, 0x48, 0x60, 0, 0, 0x20, 0x01, 0,
 		0, 0, 0, 0, 0, 0x00, 0x68])},
-	ParseIPTest{'2001:4860:0000:2001:0000:0000:0000:0068', IP([byte(0x20), 0x01, 0x48, 0x60, 0,
+	ParseIPTest{'2001:4860:0000:2001:0000:0000:0000:0068', IP([u8(0x20), 0x01, 0x48, 0x60, 0,
 		0, 0x20, 0x01, 0, 0, 0, 0, 0, 0, 0x00, 0x68])},
-	ParseIPTest{'-0.0.0.0', IP([]byte{})},
-	ParseIPTest{'0.-1.0.0', IP([]byte{})},
-	ParseIPTest{'0.0.-2.0', IP([]byte{})},
-	ParseIPTest{'0.0.0.-3', IP([]byte{})},
-	ParseIPTest{'127.0.0.256', IP([]byte{})},
-	ParseIPTest{'abc', IP([]byte{})},
-	ParseIPTest{'123:', IP([]byte{})},
-	ParseIPTest{'fe80::1%lo0', IP([]byte{})},
-	ParseIPTest{'fe80::1%911', IP([]byte{})},
-	ParseIPTest{'', IP([]byte{})},
-	ParseIPTest{'a1:a2:a3:a4::b1:b2:b3:b4', IP([]byte{})},
-	ParseIPTest{'127.001.002.003', IP([]byte{})},
-	ParseIPTest{'::ffff:127.001.002.003', IP([]byte{})},
-	ParseIPTest{'123.000.000.000', IP([]byte{})},
-	ParseIPTest{'1.2..4', IP([]byte{})},
-	ParseIPTest{'0123.0.0.1', IP([]byte{})},
+	ParseIPTest{'-0.0.0.0', IP([]u8{})},
+	ParseIPTest{'0.-1.0.0', IP([]u8{})},
+	ParseIPTest{'0.0.-2.0', IP([]u8{})},
+	ParseIPTest{'0.0.0.-3', IP([]u8{})},
+	ParseIPTest{'127.0.0.256', IP([]u8{})},
+	ParseIPTest{'abc', IP([]u8{})},
+	ParseIPTest{'123:', IP([]u8{})},
+	ParseIPTest{'fe80::1%lo0', IP([]u8{})},
+	ParseIPTest{'fe80::1%911', IP([]u8{})},
+	ParseIPTest{'', IP([]u8{})},
+	ParseIPTest{'a1:a2:a3:a4::b1:b2:b3:b4', IP([]u8{})},
+	ParseIPTest{'127.001.002.003', IP([]u8{})},
+	ParseIPTest{'::ffff:127.001.002.003', IP([]u8{})},
+	ParseIPTest{'123.000.000.000', IP([]u8{})},
+	ParseIPTest{'1.2..4', IP([]u8{})},
+	ParseIPTest{'0123.0.0.1', IP([]u8{})},
 ]
 
 fn test_parse_ip() {
-	for t in xnet.parse_ip_tests {
+	for t in parse_ip_tests {
 		assert parse_ip(t.have) == t.want
 	}
 }
@@ -51,31 +51,32 @@ const ip_string_tests = [
 	IPStringTest{ipv4(192, 0, 2, 1), '192.0.2.1'},
 	IPStringTest{ipv4(0, 0, 0, 0), '0.0.0.0'}
 	// IPv4-mapped IPv6 address
-	IPStringTest{IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 192, 0, 2, 1]), '192.0.2.1'},
-	IPStringTest{IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0, 0, 0]), '0.0.0.0'}
+	IPStringTest{IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 192, 0, 2, 1]), '192.0.2.1'},
+	IPStringTest{IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0, 0, 0]), '0.0.0.0'}
 	// IPv6 address
-	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1, 0x23, 0, 0x12, 0, 0x1]), '2001:db8::123:12:1'},
-	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1]), '2001:db8::1'},
-	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0x1, 0, 0, 0, 0x1, 0, 0, 0, 0x1]), '2001:db8:0:1:0:1:0:1'},
-	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0x1, 0, 0, 0, 0x1, 0, 0, 0, 0x1, 0, 0]), '2001:db8:1:0:1:0:1:0'},
-	IPStringTest{IP([byte(0x20), 0x1, 0, 0, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0x1]), '2001::1:0:0:1'},
-	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0]), '2001:db8:0:0:1::'},
-	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0x1]), '2001:db8::1:0:0:1'},
-	IPStringTest{IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0xa, 0, 0xb, 0, 0xc, 0, 0xd]), '2001:db8::a:b:c:d'},
-	IPStringTest{IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), '::'}, // ipv6_unspecified
-	IPStringTest{IP([]byte{}), ''}
+	IPStringTest{IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1, 0x23, 0, 0x12, 0, 0x1]), '2001:db8::123:12:1'},
+	IPStringTest{IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1]), '2001:db8::1'},
+	IPStringTest{IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0x1, 0, 0, 0, 0x1, 0, 0, 0, 0x1]), '2001:db8:0:1:0:1:0:1'},
+	IPStringTest{IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0x1, 0, 0, 0, 0x1, 0, 0, 0, 0x1, 0, 0]), '2001:db8:1:0:1:0:1:0'},
+	IPStringTest{IP([u8(0x20), 0x1, 0, 0, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0x1]), '2001::1:0:0:1'},
+	IPStringTest{IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0]), '2001:db8:0:0:1::'},
+	IPStringTest{IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0x1, 0, 0, 0, 0, 0, 0x1]), '2001:db8::1:0:0:1'},
+	IPStringTest{IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0xa, 0, 0xb, 0, 0xc, 0, 0xd]), '2001:db8::a:b:c:d'},
+	IPStringTest{ipv6_unspecified, '::'},
+	IPStringTest{IP([]u8{}), ''}
 	// Opaque byte sequence
-	IPStringTest{IP([byte(0x01), 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]), '?0123456789abcdef'},
+	IPStringTest{IP([u8(0x01), 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]), '?0123456789abcdef'},
 ]
 
 fn test_ip_string() {
-	for t in xnet.ip_string_tests {
+	for t in ip_string_tests {
 		assert t.have.string() == t.want
 	}
 }
 
 struct IPMaskTest {
 	want IP
+mut:
 	mask IPMask
 	have IP
 }
@@ -93,8 +94,8 @@ const ip_mask_tests = [
 ]
 
 fn test_ip_mask() {
-	for t in xnet.ip_mask_tests {
-		have := t.have.mask(t.mask)
+	for mut t in ip_mask_tests {
+		have := t.have.mask(mut t.mask)
 		assert have.len != 0
 		assert t.want.equal(have)
 	}
@@ -110,11 +111,11 @@ const ip_mask_string_tests = [
 	IPMaskTestString{ipv4_mask(255, 0, 128, 0), 'ff008000'},
 	IPMaskTestString{IPMask(parse_ip('ffff:ff80::')), 'ffffff80000000000000000000000000'},
 	IPMaskTestString{IPMask(parse_ip('ef00:ff80::cafe:0')), 'ef00ff800000000000000000cafe0000'},
-	IPMaskTestString{IPMask([]byte{}), ''},
+	IPMaskTestString{IPMask([]u8{}), ''},
 ]
 
 fn test_ip_mask_string() {
-	for t in xnet.ip_mask_string_tests {
+	for t in ip_mask_string_tests {
 		assert t.have.string() == t.want
 	}
 }
@@ -149,21 +150,21 @@ const parse_cidr_tests = [
 	ParseCIDRTest{'abcd:2345::/24', parse_ip('abcd:2345::'), IPNet{parse_ip('abcd:2300::'), IPMask(parse_ip('ffff:ff00::'))}, ParseError{}},
 	ParseCIDRTest{'2001:DB8::/48', parse_ip('2001:DB8::'), IPNet{parse_ip('2001:DB8::'), IPMask(parse_ip('ffff:ffff:ffff::'))}, ParseError{}},
 	ParseCIDRTest{'2001:DB8::1/48', parse_ip('2001:DB8::1'), IPNet{parse_ip('2001:DB8::'), IPMask(parse_ip('ffff:ffff:ffff::'))}, ParseError{}},
-	ParseCIDRTest{'192.168.1.1/255.255.255.0', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '192.168.1.1/255.255.255.0'}},
-	ParseCIDRTest{'192.168.1.1/35', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '192.168.1.1/35'}},
-	ParseCIDRTest{'2001:db8::1/-1', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '2001:db8::1/-1'}},
-	ParseCIDRTest{'2001:db8::1/-0', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '2001:db8::1/-0'}},
-	ParseCIDRTest{'-0.0.0.0/32', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '-0.0.0.0/32'}},
-	ParseCIDRTest{'0.-1.0.0/32', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '0.-1.0.0/32'}},
-	ParseCIDRTest{'0.0.-2.0/32', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '0.0.-2.0/32'}},
-	ParseCIDRTest{'0.0.0.-3/32', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '0.0.0.-3/32'}},
-	ParseCIDRTest{'0.0.0.0/-0', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '0.0.0.0/-0'}},
-	ParseCIDRTest{'127.000.000.001/32', IP([]byte{}), IPNet{}, ParseError{'CIDR address', '127.000.000.001/32'}},
-	ParseCIDRTest{'', IP([]byte{}), IPNet{}, ParseError{'CIDR address', ''}},
+	ParseCIDRTest{'192.168.1.1/255.255.255.0', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '192.168.1.1/255.255.255.0'}},
+	ParseCIDRTest{'192.168.1.1/35', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '192.168.1.1/35'}},
+	ParseCIDRTest{'2001:db8::1/-1', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '2001:db8::1/-1'}},
+	ParseCIDRTest{'2001:db8::1/-0', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '2001:db8::1/-0'}},
+	ParseCIDRTest{'-0.0.0.0/32', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '-0.0.0.0/32'}},
+	ParseCIDRTest{'0.-1.0.0/32', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '0.-1.0.0/32'}},
+	ParseCIDRTest{'0.0.-2.0/32', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '0.0.-2.0/32'}},
+	ParseCIDRTest{'0.0.0.-3/32', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '0.0.0.-3/32'}},
+	ParseCIDRTest{'0.0.0.0/-0', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '0.0.0.0/-0'}},
+	ParseCIDRTest{'127.000.000.001/32', IP([]u8{}), IPNet{}, ParseError{'CIDR address', '127.000.000.001/32'}},
+	ParseCIDRTest{'', IP([]u8{}), IPNet{}, ParseError{'CIDR address', ''}},
 ]
 
 fn test_parse_cidr() {
-	for t in xnet.parse_cidr_tests {
+	for t in parse_cidr_tests {
 		ip, net, err := parse_cidr(t.have)
 		assert err == t.err
 		if err == ParseError{} {
@@ -194,7 +195,7 @@ const ip_net_contains_tests = [
 ]
 
 fn test_ip_net_contains() {
-	for t in xnet.ip_net_contains_tests {
+	for t in ip_net_contains_tests {
 		ok := t.net.contains(t.ip)
 		assert ok == t.ok
 	}
@@ -213,7 +214,7 @@ const ip_net_string_tests = [
 ]
 
 fn test_ip_net_string() {
-	for t in xnet.ip_net_string_tests {
+	for t in ip_net_string_tests {
 		assert t.have.string() == t.want
 	}
 }
@@ -229,36 +230,36 @@ const cidr_mask_tests = [
 	CIDRMaskTest{12, 32, ipv4_mask(255, 240, 0, 0)},
 	CIDRMaskTest{24, 32, ipv4_mask(255, 255, 255, 0)},
 	CIDRMaskTest{32, 32, ipv4_mask(255, 255, 255, 255)},
-	CIDRMaskTest{0, 128, IPMask([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])},
-	CIDRMaskTest{4, 128, IPMask([byte(0xf0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])},
-	CIDRMaskTest{48, 128, IPMask([byte(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0, 0, 0, 0,
+	CIDRMaskTest{0, 128, IPMask([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])},
+	CIDRMaskTest{4, 128, IPMask([u8(0xf0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])},
+	CIDRMaskTest{48, 128, IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0])},
-	CIDRMaskTest{128, 128, IPMask([byte(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	CIDRMaskTest{128, 128, IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff])},
-	CIDRMaskTest{33, 32, IPMask([]byte{})},
-	CIDRMaskTest{32, 33, IPMask([]byte{})},
-	CIDRMaskTest{-1, 128, IPMask([]byte{})},
-	CIDRMaskTest{128, -1, IPMask([]byte{})},
+	CIDRMaskTest{33, 32, IPMask([]u8{})},
+	CIDRMaskTest{32, 33, IPMask([]u8{})},
+	CIDRMaskTest{-1, 128, IPMask([]u8{})},
+	CIDRMaskTest{128, -1, IPMask([]u8{})},
 ]
 
 fn test_cidr_mask() {
-	for t in xnet.cidr_mask_tests {
+	for t in cidr_mask_tests {
 		assert cidr_mask(t.ones, t.bits) == t.want
 	}
 }
 
 const (
-	v4addr         = IP([byte(192), 168, 0, 1])
-	v4mappedv6addr = IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 192, 168, 0, 1])
-	v6addr         = IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1, 0x23, 0, 0x12, 0, 0x1])
-	v4mask         = IPMask([byte(255), 255, 255, 0])
-	v4mappedv6mask = IPMask([byte(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	v4addr         = IP([u8(192), 168, 0, 1])
+	v4mappedv6addr = IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 192, 168, 0, 1])
+	v6addr         = IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1, 0x23, 0, 0x12, 0, 0x1])
+	v4mask         = IPMask([u8(255), 255, 255, 0])
+	v4mappedv6mask = IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 255, 255, 255, 0])
-	v6mask         = IPMask([byte(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0,
+	v6mask         = IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0,
 		0, 0, 0, 0])
-	badaddr        = IP([byte(192), 168, 0])
-	badmask        = IPMask([byte(255), 255, 0])
-	v4maskzero     = IPMask([byte(0), 0, 0, 0])
+	badaddr        = IP([u8(192), 168, 0])
+	badmask        = IPMask([u8(255), 255, 0])
+	v4maskzero     = IPMask([u8(0), 0, 0, 0])
 )
 
 struct NetworkNumberAndMaskTest {
@@ -285,7 +286,7 @@ const network_number_and_mask_tests = [
 ]
 
 fn test_network_number_and_mask() {
-	for t in xnet.network_number_and_mask_tests {
+	for t in network_number_and_mask_tests {
 		ip, m := network_number_and_mask(t.have)
 		assert IPNet{ip, m} == t.want
 	}
@@ -298,25 +299,24 @@ struct IPAddrFamilyTest {
 }
 
 const ip_addr_family_tests = [
-	// de-harcode IPs once constants work properly
-	IPAddrFamilyTest{ipv4(255, 255, 255, 255), true, false}, // ipv4_bcast
-	IPAddrFamilyTest{ipv4(224, 0, 0, 1), true, false}, // ipv4_allsys
-	IPAddrFamilyTest{ipv4(224, 0, 0, 2), true, false}, // ipv4_router
-	IPAddrFamilyTest{ipv4(0, 0, 0, 0), true, false}, // ipv4_zero
+	IPAddrFamilyTest{ipv4_bcast, true, false},
+	IPAddrFamilyTest{ipv4_allsys, true, false},
+	IPAddrFamilyTest{ipv4_allrouter, true, false},
+	IPAddrFamilyTest{ipv4_zero, true, false},
 	IPAddrFamilyTest{ipv4(127, 0, 0, 1), true, false},
 	IPAddrFamilyTest{ipv4(240, 0, 0, 1), true, false},
-	IPAddrFamilyTest{IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), false, true}, // ipv6_unspecified
-	IPAddrFamilyTest{IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]), false, true}, // ipv6_loopback
-	IPAddrFamilyTest{IP([byte(0xff), 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01]), false, true}, // ipv6_interfacelocalallnodes
-	IPAddrFamilyTest{IP([byte(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01]), false, true}, // ipv6_linklocalallnodes
-	IPAddrFamilyTest{IP([byte(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02]), false, true}, // ipv6_linklocalallrouters
+	IPAddrFamilyTest{ipv6_unspecified, false, true},
+	IPAddrFamilyTest{ipv6_loopback, false, true},
+	IPAddrFamilyTest{ipv6_interfacelocalallnodes, false, true},
+	IPAddrFamilyTest{ipv6_linklocalallnodes, false, true},
+	IPAddrFamilyTest{ipv6_linklocalallrouters, false, true},
 	IPAddrFamilyTest{parse_ip('ff05::a:b:c:d'), false, true},
 	IPAddrFamilyTest{parse_ip('fe80::1:2:3:4'), false, true},
 	IPAddrFamilyTest{parse_ip('2001:db8::123:12:1'), false, true},
 ]
 
 fn test_ip_addr_family() {
-	for t in xnet.ip_addr_family_tests {
+	for t in ip_addr_family_tests {
 		af := t.have.to4().len
 		assert t.have.to4().len > 0 == t.af4
 		assert t.have.len == ipv6_len && t.have.to4().len == 0 == t.af6
@@ -330,61 +330,55 @@ struct IPAddrScopeTest {
 }
 
 const ip_addr_scope_tests = [
-	// de-harcode IPs once constants work properly
-	IPAddrScopeTest{'is_unspecified', ipv4(0, 0, 0, 0), true}, // ipv4_zero
+	IPAddrScopeTest{'is_unspecified', ipv4_zero, true},
 	IPAddrScopeTest{'is_unspecified', ipv4(127, 0, 0, 1), false},
-	IPAddrScopeTest{'is_unspecified', IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), true}, // ipv6_unspecified
-	IPAddrScopeTest{'is_unspecified', IP([byte(0xff), 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0x01]), false}, // ipv6_interfacelocalallnodes
-	IPAddrScopeTest{'is_unspecified', IP([]byte{}), false},
+	IPAddrScopeTest{'is_unspecified', ipv6_unspecified, true},
+	IPAddrScopeTest{'is_unspecified', ipv6_interfacelocalallnodes, false},
+	IPAddrScopeTest{'is_unspecified', IP([]u8{}), false},
 	IPAddrScopeTest{'is_loopback', ipv4(127, 0, 0, 1), true},
 	IPAddrScopeTest{'is_loopback', ipv4(127, 255, 255, 254), true},
 	IPAddrScopeTest{'is_loopback', ipv4(128, 1, 2, 3), false},
-	IPAddrScopeTest{'is_loopback', IP([byte(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]), true}, // ipv6_loopback
-	IPAddrScopeTest{'is_loopback', IP([byte(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0x02]), false}, // ipv6_linklocalallrouters
-	IPAddrScopeTest{'is_loopback', IP([]byte{}), false},
+	IPAddrScopeTest{'is_loopback', ipv6_loopback, true},
+	IPAddrScopeTest{'is_loopback', ipv6_linklocalallrouters, false},
+	IPAddrScopeTest{'is_loopback', IP([]u8{}), false},
 	IPAddrScopeTest{'is_multicast', ipv4(224, 0, 0, 0), true},
 	IPAddrScopeTest{'is_multicast', ipv4(239, 0, 0, 0), true},
 	IPAddrScopeTest{'is_multicast', ipv4(240, 0, 0, 0), false},
-	IPAddrScopeTest{'is_multicast', IP([byte(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0x01]), true}, // ipv6_linklocalallnodes
-	IPAddrScopeTest{'is_multicast', IP([byte(0xff), 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	IPAddrScopeTest{'is_multicast', ipv6_linklocalallnodes, true},
+	IPAddrScopeTest{'is_multicast', IP([u8(0xff), 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0]), true},
-	IPAddrScopeTest{'is_multicast', IP([byte(0xfe), 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	IPAddrScopeTest{'is_multicast', IP([u8(0xfe), 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0]), false},
-	IPAddrScopeTest{'is_multicast', IP([]byte{}), false},
+	IPAddrScopeTest{'is_multicast', IP([]u8{}), false},
 	IPAddrScopeTest{'is_interface_local_multicast', ipv4(224, 0, 0, 0), false},
 	IPAddrScopeTest{'is_interface_local_multicast', ipv4(0xff, 0x01, 0, 0), false},
-	IPAddrScopeTest{'is_interface_local_multicast', IP([byte(0xff), 0x01, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0x01]), true}, // ipv6_interfacelocalallnodes
-	IPAddrScopeTest{'is_interface_local_multicast', IP([]byte{}), false},
+	IPAddrScopeTest{'is_interface_local_multicast', ipv6_interfacelocalallnodes, true},
+	IPAddrScopeTest{'is_interface_local_multicast', IP([]u8{}), false},
 	IPAddrScopeTest{'is_link_local_multicast', ipv4(224, 0, 0, 0), true},
 	IPAddrScopeTest{'is_link_local_multicast', ipv4(239, 0, 0, 0), false},
 	IPAddrScopeTest{'is_link_local_multicast', ipv4(0xff, 0x02, 0, 0), false},
-	IPAddrScopeTest{'is_link_local_multicast', IP([byte(0xff), 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0x01]), false}, // ipv6_interfacelocalallnodes
-	IPAddrScopeTest{'is_link_local_multicast', IP([]byte{}), false},
+	IPAddrScopeTest{'is_link_local_multicast', ipv6_interfacelocalallnodes, false},
+	IPAddrScopeTest{'is_link_local_multicast', IP([]u8{}), false},
 	IPAddrScopeTest{'is_link_local_unicast', ipv4(169, 254, 0, 0), true},
 	IPAddrScopeTest{'is_link_local_unicast', ipv4(169, 255, 0, 0), false},
 	IPAddrScopeTest{'is_link_local_unicast', ipv4(0xfe, 0x80, 0, 0), false},
-	IPAddrScopeTest{'is_link_local_unicast', IP([byte(0xfe), 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	IPAddrScopeTest{'is_link_local_unicast', IP([u8(0xfe), 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0]), true},
-	IPAddrScopeTest{'is_link_local_unicast', IP([byte(0xfe), 0xc0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	IPAddrScopeTest{'is_link_local_unicast', IP([u8(0xfe), 0xc0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0]), false},
-	IPAddrScopeTest{'is_link_local_unicast', IP([]byte{}), false},
+	IPAddrScopeTest{'is_link_local_unicast', IP([]u8{}), false},
 	IPAddrScopeTest{'is_global_unicast', ipv4(240, 0, 0, 0), true},
 	IPAddrScopeTest{'is_global_unicast', ipv4(232, 0, 0, 0), false},
 	IPAddrScopeTest{'is_global_unicast', ipv4(169, 254, 0, 0), false},
-	IPAddrScopeTest{'is_global_unicast', ipv4(255, 255, 255, 255), false}, // ipv4_bcast
-	IPAddrScopeTest{'is_global_unicast', IP([byte(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1,
+	IPAddrScopeTest{'is_global_unicast', ipv4_bcast, false},
+	IPAddrScopeTest{'is_global_unicast', IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1,
 		0x23, 0, 0x12, 0, 0x1]), true},
-	IPAddrScopeTest{'is_global_unicast', IP([byte(0xfe), 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	IPAddrScopeTest{'is_global_unicast', IP([u8(0xfe), 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0]), false},
-	IPAddrScopeTest{'is_global_unicast', IP([byte(0xff), 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	IPAddrScopeTest{'is_global_unicast', IP([u8(0xff), 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0]), false},
-	IPAddrScopeTest{'is_global_unicast', IP([]byte{}), false},
-	IPAddrScopeTest{'is_private', IP([]byte{}), false},
+	IPAddrScopeTest{'is_global_unicast', IP([]u8{}), false},
+	IPAddrScopeTest{'is_private', IP([]u8{}), false},
 	IPAddrScopeTest{'is_private', ipv4(1, 1, 1, 1), false},
 	IPAddrScopeTest{'is_private', ipv4(9, 255, 255, 255), false},
 	IPAddrScopeTest{'is_private', ipv4(10, 0, 0, 0), true},
@@ -401,18 +395,18 @@ const ip_addr_scope_tests = [
 	IPAddrScopeTest{'is_private', ipv4(192, 168, 0, 0), true},
 	IPAddrScopeTest{'is_private', ipv4(192, 168, 255, 255), true},
 	IPAddrScopeTest{'is_private', ipv4(192, 169, 0, 0), false},
-	IPAddrScopeTest{'is_private', IP([byte(0xfb), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	IPAddrScopeTest{'is_private', IP([u8(0xfb), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]), false},
-	IPAddrScopeTest{'is_private', IP([byte(0xfc), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), true},
-	IPAddrScopeTest{'is_private', IP([byte(0xfc), 0xff, 0x12, 0, 0, 0, 0, 0x44, 0, 0, 0, 0, 0,
+	IPAddrScopeTest{'is_private', IP([u8(0xfc), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), true},
+	IPAddrScopeTest{'is_private', IP([u8(0xfc), 0xff, 0x12, 0, 0, 0, 0, 0x44, 0, 0, 0, 0, 0,
 		0, 0, 0]), true},
-	IPAddrScopeTest{'is_private', IP([byte(0xfd), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	IPAddrScopeTest{'is_private', IP([u8(0xfd), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]), true},
-	IPAddrScopeTest{'is_private', IP([byte(0xfe), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), false},
+	IPAddrScopeTest{'is_private', IP([u8(0xfe), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), false},
 ]
 
 fn test_ip_addr_scope() {
-	for t in xnet.ip_addr_scope_tests {
+	for t in ip_addr_scope_tests {
 		match t.scope {
 			'is_unspecified' {
 				assert t.have.is_unspecified() == t.ok

@@ -10,8 +10,8 @@ fn dtoi(s string) (int, int, bool) {
 	mut i := 0
 	for i = 0; i < s.len && `0` <= s[i] && s[i] <= `9`; i++ {
 		n = n * 10 + int(s[i] - `0`)
-		if n >= xnet.big {
-			return xnet.big, i, false
+		if n >= big {
+			return big, i, false
 		}
 	}
 	if i == 0 {
@@ -38,7 +38,7 @@ fn xtoi(s string) (int, int, bool) {
 		} else {
 			break
 		}
-		if n >= xnet.big {
+		if n >= big {
 			return 0, i, false
 		}
 	}
@@ -48,8 +48,24 @@ fn xtoi(s string) (int, int, bool) {
 	return n, i, true
 }
 
+const hex_digit = '0123456789abcdef'
+
+// Convert i to a hexadecimal string. Leading zeros are not printed.
+fn append_hex(mut dst []u8, i u32) []u8 {
+	if i == 0 {
+		dst << `0`
+	}
+	for j := 7; j >= 0; j-- {
+		v := i >> int(j * 4)
+		if v > 0 {
+			dst << hex_digit[v & 0xf]
+		}
+	}
+	return dst
+}
+
 // Index of rightmost occurrence of b in s.
-fn last(s string, b byte) int {
+fn last(s string, b u8) int {
 	mut j := s.len
 	for i := j - 1; i >= 0; i-- {
 		if s[i] == b {
