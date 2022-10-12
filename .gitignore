@@ -1,9 +1,0 @@
-# Binaries for programs and plugins
-main
-xnet
-*.exe
-*.exe~
-*.so
-*.dylib
-*.dll
-vls.log
