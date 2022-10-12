@@ -13,10 +13,10 @@ const parse_ip_tests = [
 	ParseIPTest{'0:0:0:0:0000:ffff:127.1.2.3', ipv4(127, 1, 2, 3)},
 	ParseIPTest{'0:0:0:0:000000:ffff:127.1.2.3', ipv4(127, 1, 2, 3)},
 	ParseIPTest{'0:0:0:0::ffff:127.1.2.3', ipv4(127, 1, 2, 3)},
-	ParseIPTest{'2001:4860:0:2001::68', IP([u8(0x20), 0x01, 0x48, 0x60, 0, 0, 0x20, 0x01, 0,
-		0, 0, 0, 0, 0, 0x00, 0x68])},
-	ParseIPTest{'2001:4860:0000:2001:0000:0000:0000:0068', IP([u8(0x20), 0x01, 0x48, 0x60, 0,
-		0, 0x20, 0x01, 0, 0, 0, 0, 0, 0, 0x00, 0x68])},
+	ParseIPTest{'2001:4860:0:2001::68', IP([u8(0x20), 0x01, 0x48, 0x60, 0, 0, 0x20, 0x01, 0, 0,
+		0, 0, 0, 0, 0x00, 0x68])},
+	ParseIPTest{'2001:4860:0000:2001:0000:0000:0000:0068', IP([u8(0x20), 0x01, 0x48, 0x60, 0, 0,
+		0x20, 0x01, 0, 0, 0, 0, 0, 0, 0x00, 0x68])},
 	ParseIPTest{'-0.0.0.0', IP([]u8{})},
 	ParseIPTest{'0.-1.0.0', IP([]u8{})},
 	ParseIPTest{'0.0.-2.0', IP([]u8{})},
@@ -234,8 +234,8 @@ const cidr_mask_tests = [
 	CIDRMaskTest{4, 128, IPMask([u8(0xf0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])},
 	CIDRMaskTest{48, 128, IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0])},
-	CIDRMaskTest{128, 128, IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff])},
+	CIDRMaskTest{128, 128, IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff])},
 	CIDRMaskTest{33, 32, IPMask([]u8{})},
 	CIDRMaskTest{32, 33, IPMask([]u8{})},
 	CIDRMaskTest{-1, 128, IPMask([]u8{})},
@@ -253,10 +253,10 @@ const (
 	v4mappedv6addr = IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 192, 168, 0, 1])
 	v6addr         = IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1, 0x23, 0, 0x12, 0, 0x1])
 	v4mask         = IPMask([u8(255), 255, 255, 0])
-	v4mappedv6mask = IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-		0xff, 0xff, 255, 255, 255, 0])
-	v6mask         = IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0,
-		0, 0, 0, 0])
+	v4mappedv6mask = IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 255, 255, 255, 0])
+	v6mask         = IPMask([u8(0xff), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0, 0,
+		0, 0, 0])
 	badaddr        = IP([u8(192), 168, 0])
 	badmask        = IPMask([u8(255), 255, 0])
 	v4maskzero     = IPMask([u8(0), 0, 0, 0])
@@ -371,12 +371,12 @@ const ip_addr_scope_tests = [
 	IPAddrScopeTest{'is_global_unicast', ipv4(232, 0, 0, 0), false},
 	IPAddrScopeTest{'is_global_unicast', ipv4(169, 254, 0, 0), false},
 	IPAddrScopeTest{'is_global_unicast', ipv4_bcast, false},
-	IPAddrScopeTest{'is_global_unicast', IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1,
-		0x23, 0, 0x12, 0, 0x1]), true},
-	IPAddrScopeTest{'is_global_unicast', IP([u8(0xfe), 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0]), false},
-	IPAddrScopeTest{'is_global_unicast', IP([u8(0xff), 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0]), false},
+	IPAddrScopeTest{'is_global_unicast', IP([u8(0x20), 0x1, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0x1, 0x23,
+		0, 0x12, 0, 0x1]), true},
+	IPAddrScopeTest{'is_global_unicast', IP([u8(0xfe), 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0]), false},
+	IPAddrScopeTest{'is_global_unicast', IP([u8(0xff), 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0]), false},
 	IPAddrScopeTest{'is_global_unicast', IP([]u8{}), false},
 	IPAddrScopeTest{'is_private', IP([]u8{}), false},
 	IPAddrScopeTest{'is_private', ipv4(1, 1, 1, 1), false},
@@ -398,8 +398,8 @@ const ip_addr_scope_tests = [
 	IPAddrScopeTest{'is_private', IP([u8(0xfb), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]), false},
 	IPAddrScopeTest{'is_private', IP([u8(0xfc), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), true},
-	IPAddrScopeTest{'is_private', IP([u8(0xfc), 0xff, 0x12, 0, 0, 0, 0, 0x44, 0, 0, 0, 0, 0,
-		0, 0, 0]), true},
+	IPAddrScopeTest{'is_private', IP([u8(0xfc), 0xff, 0x12, 0, 0, 0, 0, 0x44, 0, 0, 0, 0, 0, 0,
+		0, 0]), true},
 	IPAddrScopeTest{'is_private', IP([u8(0xfd), 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]), true},
 	IPAddrScopeTest{'is_private', IP([u8(0xfe), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), false},

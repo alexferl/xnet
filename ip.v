@@ -12,8 +12,8 @@ import bytealg
 
 // IP address lengths (bytes).
 const (
-	ipv4_len        = 4
-	ipv6_len        = 16
+	ipv4_len = 4
+	ipv6_len = 16
 )
 
 // An IP is a single IP address, a slice of bytes.
@@ -102,12 +102,9 @@ const (
 	ipv6_zero                   = IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 	ipv6_unspecified            = IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 	ipv6_loopback               = IP([u8(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-	ipv6_interfacelocalallnodes = IP([u8(0xff), 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0x01])
-	ipv6_linklocalallnodes      = IP([u8(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0x01])
-	ipv6_linklocalallrouters    = IP([u8(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0x02])
+	ipv6_interfacelocalallnodes = IP([u8(0xff), 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01])
+	ipv6_linklocalallnodes      = IP([u8(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01])
+	ipv6_linklocalallrouters    = IP([u8(0xff), 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02])
 )
 
 // is_unspecified reports whether ip is an unspecified address, either
